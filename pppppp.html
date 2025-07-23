@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Feedback Form</title>
+  <style>
+    body { background: #111; color: gold; font-family: Arial, sans-serif; padding: 40px; }
+    label, select, textarea, input { display: block; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <h2>Submit Your Feedback</h2>
+  <form id="feedbackForm">
+    <label for="name">Name:</label>
+    <select id="name" name="name" required>
+      <option value="">— Loading names… —</option>
+    </select>
+    
+    <label for="feedback">Feedback:</label>
+    <textarea id="feedback" name="feedback" rows="4" cols="30" required></textarea>
+    
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- Thank You message, hidden initially -->
+  <div id="thankyou" style="display:none;">
+    <h2>Thank You!</h2>
+    <p>Your feedback has been received. We appreciate your input.</p>
+  </div>
+
+  <script>
+    const LIST_API_URL = "https://script.google.com/macros/s/AKfycbw12E_WRRW6fYmI0eXXIjNWXOSxv79G_0x4Fey6jzF7Lcu2KurTY4eeUOhmWqZ0AeFl/exec";     // replace with actual URL
+    const FORM_API_URL = "https://script.google.com/macros/s/AKfycbxA2LbsNPEOh0_e95vzIh2xQJTnTYkQCV3rlybjUYRRoFYBu5GNOAK_94excBVFpeTx/exec";     // replace with actual URL
+
+    // Load names into dropdown
+    fetch(LIST_API_URL)
+      .then(r => r.json())
+      .then(names => {
+        const sel = document.getElementById("name");
+        sel.innerHTML = '<option value="">— Select your name —</option>';
+        names.forEach(n => {
+          const o = document.createElement("option");
+          o.value = o.textContent = n;
+          sel.appendChild(o);
+        });
+      })
+      .catch(() => alert("Could not load name list."));
+
+    // Handle form submission
+    document.getElementById("feedbackForm").addEventListener("submit", evt => {
+      evt.preventDefault();
+      const data = new URLSearchParams(new FormData(evt.target));
+      fetch(FORM_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: data
+      })
+      .then(r => r.json())
+      .then(resp => {
+        if (resp.status === "success") {
+          // Hide form, show thank you
+          document.getElementById("feedbackForm").style.display = "none";
+          document.getElementById("thankyou").style.display = "block";
+        } else {
+          alert("Submission failed, please try again.");
+        }
+      })
+      .catch(() => alert("Network error, please try again."));
+    });
+  </script>
+</body>
+</html>
